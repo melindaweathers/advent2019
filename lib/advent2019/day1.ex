@@ -22,20 +22,8 @@ defmodule Day1 do
   def run do
     IO.puts "Hello world"
 
-    IO.puts "Should be 34241"
-    IO.puts calc_file('inputs/day1-sample.txt', &calc_fuel/1)
-
     IO.puts "First star"
     IO.puts calc_file('inputs/day1.txt', &calc_fuel/1)
-
-    IO.puts "Should be 2"
-    IO.puts calc_recursive_fuel(14)
-
-    IO.puts "Should be 966"
-    IO.puts calc_recursive_fuel(1969)
-
-    IO.puts "Should be 50346"
-    IO.puts calc_recursive_fuel(100756)
 
     IO.puts "Second star"
     IO.puts calc_file('inputs/day1.txt', &calc_recursive_fuel/1)
