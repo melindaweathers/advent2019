@@ -5,22 +5,17 @@ defmodule Day1 do
     div(mass, 3) - 2
   end
 
-  def calc_total_fuel(filename) do
-    File.stream!(filename)
-      |> Stream.map( &( calc_fuel(&1 |> String.trim() |> String.to_integer) ) )
-      |> Enum.sum
-  end
-
-
   def calc_recursive_fuel(0), do: 0
   def calc_recursive_fuel(mass) do
     fuel = calc_fuel(mass)
     fuel + calc_recursive_fuel(fuel)
   end
 
-  def calc_total_recursive_fuel(filename) do
+  def calc_file(filename, fun) do
     File.stream!(filename)
-      |> Stream.map( &( calc_recursive_fuel(&1 |> String.trim() |> String.to_integer) ) )
+      |> Stream.map(&(String.trim(&1)))
+      |> Stream.map(&(String.to_integer(&1)))
+      |> Stream.map(fun)
       |> Enum.sum
   end
 
@@ -28,10 +23,10 @@ defmodule Day1 do
     IO.puts "Hello world"
 
     IO.puts "Should be 34241"
-    IO.puts calc_total_fuel('inputs/day1-sample.txt')
+    IO.puts calc_file('inputs/day1-sample.txt', &calc_fuel/1)
 
     IO.puts "First star"
-    IO.puts calc_total_fuel('inputs/day1.txt')
+    IO.puts calc_file('inputs/day1.txt', &calc_fuel/1)
 
     IO.puts "Should be 2"
     IO.puts calc_recursive_fuel(14)
@@ -43,6 +38,6 @@ defmodule Day1 do
     IO.puts calc_recursive_fuel(100756)
 
     IO.puts "Second star"
-    IO.puts calc_total_recursive_fuel('inputs/day1.txt')
+    IO.puts calc_file('inputs/day1.txt', &calc_recursive_fuel/1)
   end
 end
