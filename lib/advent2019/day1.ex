@@ -13,8 +13,8 @@ defmodule Day1 do
 
   def calc_file(filename, fun) do
     File.stream!(filename)
-      |> Stream.map(&(String.trim(&1)))
-      |> Stream.map(&(String.to_integer(&1)))
+      |> Stream.map(&String.trim/1)
+      |> Stream.map(&String.to_integer/1)
       |> Stream.map(fun)
       |> Enum.sum
   end
