@@ -68,6 +68,44 @@ defmodule Day5 do
     %{ program | outputs: [output|program.outputs] } |> advance(2)
   end
 
+  # Op 5 - Jump if true
+  def run_op(program, 5, param_modes) do
+    check_for_true = lookup(program, 1, param_modes)
+    if check_for_true != 0 do
+      new_pos = lookup(program, 2, param_modes)
+      %{ program | pos: new_pos }
+    else
+      program |> advance(3)
+    end
+  end
+
+  # Op 6 - Jump if false
+  def run_op(program, 6, param_modes) do
+    check_for_false = lookup(program, 1, param_modes)
+    if check_for_false == 0 do
+      new_pos = lookup(program, 2, param_modes)
+      %{ program | pos: new_pos }
+    else
+      program |> advance(3)
+    end
+  end
+
+  # Op 7 - less than
+  def run_op(program, 7, param_modes) do
+    param1 = lookup(program, 1, param_modes)
+    param2 = lookup(program, 2, param_modes)
+    val = if param1 < param2, do: 1, else: 0
+    set_val(program, 3, val) |> advance(4)
+  end
+
+  # Op 8 - equals
+  def run_op(program, 8, param_modes) do
+    param1 = lookup(program, 1, param_modes)
+    param2 = lookup(program, 2, param_modes)
+    val = if param1 == param2, do: 1, else: 0
+    set_val(program, 3, val) |> advance(4)
+  end
+
   def parse_instructions(str) do
     str
     |> String.trim
@@ -86,9 +124,12 @@ defmodule Day5 do
   end
 
   def run do
-    IO.puts "First Star"
     {:ok, operations} = File.read('inputs/day5.txt')
-    first_star_result = run_program(operations, [1])
-    IO.inspect first_star_result.outputs
+
+    IO.puts "First Star"
+    IO.inspect run_program(operations, [1]).outputs
+
+    IO.puts "Second Star"
+    IO.inspect run_program(operations, [5]).outputs
   end
 end

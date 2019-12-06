@@ -27,4 +27,40 @@ defmodule Day5Test do
   test "negative values" do
     assert Day5.run_program("1101,100,-1,4,0") |> Day5.get_instructions == "1101,100,-1,4,99"
   end
+
+  test "equals and less than" do
+    # Test input is equal to 8
+    assert Day5.run_program("3,9,8,9,10,9,4,9,99,-1,8", [8]).outputs == [1]
+    assert Day5.run_program("3,9,8,9,10,9,4,9,99,-1,8", [2]).outputs == [0]
+
+    # Test input is less than 8
+    assert Day5.run_program("3,9,7,9,10,9,4,9,99,-1,8", [7]).outputs == [1]
+    assert Day5.run_program("3,9,7,9,10,9,4,9,99,-1,8", [8]).outputs == [0]
+    assert Day5.run_program("3,9,7,9,10,9,4,9,99,-1,8", [9]).outputs == [0]
+
+    # Test input is equal to 8
+    assert Day5.run_program("3,3,1108,-1,8,3,4,3,99", [8]).outputs == [1]
+    assert Day5.run_program("3,3,1108,-1,8,3,4,3,99", [2]).outputs == [0]
+
+    # Test input is less than 8
+    assert Day5.run_program("3,3,1107,-1,8,3,4,3,99", [2]).outputs == [1]
+    assert Day5.run_program("3,3,1107,-1,8,3,4,3,99", [8]).outputs == [0]
+    assert Day5.run_program("3,3,1107,-1,8,3,4,3,99", [9]).outputs == [0]
+  end
+
+  test "jumps" do
+    assert Day5.run_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9", [0]).outputs == [0]
+    assert Day5.run_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9", [2]).outputs == [1]
+    assert Day5.run_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1", [0]).outputs == [0]
+    assert Day5.run_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1", [2]).outputs == [1]
+  end
+
+  test "larger example" do
+    prog1 = Day5.run_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", [7])
+    assert prog1.outputs == [999]
+    prog2 = Day5.run_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", [8])
+    assert prog2.outputs == [1000]
+    prog3 = Day5.run_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", [9])
+    assert prog3.outputs == [1001]
+  end
 end
