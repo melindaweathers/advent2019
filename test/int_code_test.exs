@@ -63,4 +63,13 @@ defmodule IntCodeTest do
     prog3 = IntCode.run_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", [9])
     assert prog3.outputs == [1001]
   end
+
+  test "waiting for input" do
+    prog1 = IntCode.run_program("3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0", [3])
+    assert !prog1.halt
+    assert prog1.needs_input
+    prog1 = IntCode.resume_with_inputs(prog1, [0])
+    assert prog1.halt
+    assert prog1.outputs == [3]
+  end
 end

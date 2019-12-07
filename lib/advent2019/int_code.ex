@@ -1,19 +1,21 @@
 defmodule IntCode do
   defmodule Program do
-    defstruct instructions: Map.new(), pos: 0, inputs: [], outputs: [], halt: false
+    defstruct instructions: Map.new(), pos: 0, inputs: [], outputs: [], halt: false, needs_input: false
   end
 
   def run_program(str, inputs \\ []) do
     map = parse_instructions(str)
     _run_program(%Program{instructions: map, pos: 0, inputs: inputs, outputs: []})
   end
-  defp _run_program(%Program{halt: true} = program) do
-    outputs = program.outputs |> Enum.reverse
-    %{ program | outputs: outputs }
-  end
+  defp _run_program(%Program{halt: true} = program), do: program
+  defp _run_program(%Program{needs_input: true} = program), do: program
   defp _run_program(program) do
     { op, param_modes } = parse_op(program.instructions[program.pos])
     run_op(program, op, param_modes) |> _run_program
+  end
+
+  def resume_with_inputs(program, inputs) do
+    _run_program( %{ program | needs_input: false, inputs: inputs } )
   end
 
   def parse_op(op) do
@@ -56,6 +58,7 @@ defmodule IntCode do
   end
 
   # Op 3 - Read Input
+  def run_op(%Program{inputs: []} = program, 3, _param_modes), do: %{ program | needs_input: true }
   def run_op(program, 3, _param_modes) do
     [this_input | other_inputs] = program.inputs
     set_val(program, 1, this_input) |> set_inputs(other_inputs) |> advance(2)
@@ -64,7 +67,7 @@ defmodule IntCode do
   # Op 4 - Output
   def run_op(program, 4, param_modes) do
     output = lookup(program, 1, param_modes)
-    %{ program | outputs: [output|program.outputs] } |> advance(2)
+    %{ program | outputs: program.outputs ++ [output] } |> advance(2)
   end
 
   # Op 5 - Jump if true
