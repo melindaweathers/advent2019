@@ -3,13 +3,9 @@ defmodule Day7 do
   require IntCode
   require Permutations
 
-  def check_sequence([aphase, bphase, cphase, dphase, ephase], operations) do
-    a = IntCode.run_program(operations, [aphase])
-    b = IntCode.run_program(operations, [bphase])
-    c = IntCode.run_program(operations, [cphase])
-    d = IntCode.run_program(operations, [dphase])
-    e = IntCode.run_program(operations, [ephase])
-    run_feedback_loop([a,b,c,d,e], 0, false)
+  def check_sequence(phases, operations) do
+    programs = for phase <- phases, do: IntCode.run_program(operations, [phase])
+    run_feedback_loop(programs, 0, false)
   end
   def run_feedback_loop(_programs, to_thrusters, true), do: to_thrusters
   def run_feedback_loop([a,b,c,d,e], to_thrusters, false) do
@@ -27,10 +23,7 @@ defmodule Day7 do
   end
 
   def find_best_sequence(operations, sequence_digits) do
-    sequences = Permutations.of(sequence_digits)
-    Enum.map(sequences, fn(sequence) ->
-      check_sequence(sequence, operations)
-    end) |> Enum.max
+    (for sequence <- Permutations.of(sequence_digits), do: check_sequence(sequence, operations)) |> Enum.max
   end
 
   def run do
