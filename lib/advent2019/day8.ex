@@ -8,7 +8,7 @@ defmodule Day8 do
   end
 
   def count_digits(layer, digit) do
-    (for char <- layer, char == digit, do: char) |> Enum.count
+    Enum.reduce(layer, 0, fn char, count -> if char == digit, do: count + 1, else: count end)
   end
 
   def layer_with_fewest_zeroes(layers) do
