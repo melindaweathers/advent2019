@@ -72,4 +72,21 @@ defmodule IntCodeTest do
     assert prog1.halt
     assert prog1.outputs == [3]
   end
+
+  test "relative base" do
+    prog = IntCode.run_program("109,19,99")
+    assert prog.relative_base == 19
+    prog = IntCode.run_program("109,19,204,-19,99")
+    assert prog.outputs == [109]
+  end
+
+  test "more relative base and large numbers" do
+    prog2 = IntCode.run_program("104,1125899906842624,99")
+    assert prog2.outputs == [1125899906842624]
+    prog3 = IntCode.run_program("1102,34915192,34915192,7,4,7,99,0")
+    assert prog3.outputs == [1219070632396864]
+    prog1 = IntCode.run_program("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99")
+    IO.inspect prog1.outputs
+    assert prog1.outputs == [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+  end
 end

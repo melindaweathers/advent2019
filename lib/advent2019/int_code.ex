@@ -1,9 +1,9 @@
 defmodule IntCode do
   defmodule Program do
-    defstruct instructions: Map.new(), pos: 0, inputs: [], outputs: [], halt: false, needs_input: false
+    defstruct instructions: Map.new(), pos: 0, inputs: [], outputs: [], halt: false, needs_input: false, relative_base: 0
   end
 
-  @op_map %{ 99 => :halt, 1 => :add, 2 => :mult, 3 => :input, 4 => :output, 5 => :jumpif, 6 => :jumpunless, 7 => :lt, 8 => :eq }
+  @op_map %{ 99 => :halt, 1 => :add, 2 => :mult, 3 => :input, 4 => :output, 5 => :jumpif, 6 => :jumpunless, 7 => :lt, 8 => :eq, 9 => :relbase }
 
   def run_program(str, inputs \\ []) do
     map = parse_instructions(str)
@@ -41,11 +41,18 @@ defmodule IntCode do
   end
 
   def vget(prog, offset, modes), do: _vget(prog, offset, modes[offset])
-  def _vget(prog, offset, 0), do: prog.instructions[prog.instructions[prog.pos + offset]]
-  def _vget(prog, offset, 1), do: prog.instructions[prog.pos + offset]
+  def _vget(prog, offset, 0), do: Map.get(prog.instructions, Map.get(prog.instructions, prog.pos + offset, 0), 0)
+  def _vget(prog, offset, 1), do: Map.get(prog.instructions, prog.pos + offset, 0)
+  def _vget(prog, offset, 2), do: Map.get(prog.instructions, prog.relative_base + Map.get(prog.instructions, prog.pos + offset, 0), 0)
 
-  def vset(prog, offset, val) do
+  def vset(prog, offset, val, modes), do: _vset(prog, offset, val, modes[offset])
+  def _vset(prog, offset, val, 0) do
     set_pos = prog.instructions[prog.pos + offset]
+    new_map = Map.put(prog.instructions, set_pos, val)
+    %{ prog | instructions: new_map }
+  end
+  def _vset(prog, offset, val, 2) do
+    set_pos = prog.instructions[prog.pos + offset] + prog.relative_base
     new_map = Map.put(prog.instructions, set_pos, val)
     %{ prog | instructions: new_map }
   end
@@ -57,17 +64,17 @@ defmodule IntCode do
   def run_op(prog, :halt, _), do: %{ prog | halt: true }
 
   def run_op(prog, :add, modes) do
-    vset(prog, 3, vget(prog, 1, modes) + vget(prog, 2, modes)) |> advance(4)
+    vset(prog, 3, vget(prog, 1, modes) + vget(prog, 2, modes), modes) |> advance(4)
   end
 
   def run_op(prog, :mult, modes) do
-    vset(prog, 3, vget(prog, 1, modes) * vget(prog, 2, modes)) |> advance(4)
+    vset(prog, 3, vget(prog, 1, modes) * vget(prog, 2, modes), modes) |> advance(4)
   end
 
   def run_op(%Program{inputs: []} = prog, :input, _modes), do: %{ prog | needs_input: true }
-  def run_op(prog, :input, _modes) do
+  def run_op(prog, :input, modes) do
     [this_input | other_inputs] = prog.inputs
-    vset(prog, 1, this_input) |> set_inputs(other_inputs) |> advance(2)
+    vset(prog, 1, this_input, modes) |> set_inputs(other_inputs) |> advance(2)
   end
 
   def run_op(prog, :output, modes) do
@@ -84,11 +91,15 @@ defmodule IntCode do
 
   def run_op(prog, :lt, modes) do
     val = if vget(prog, 1, modes) < vget(prog, 2, modes), do: 1, else: 0
-    vset(prog, 3, val) |> advance(4)
+    vset(prog, 3, val, modes) |> advance(4)
   end
 
   def run_op(prog, :eq, modes) do
     val = if vget(prog, 1, modes) == vget(prog, 2, modes), do: 1, else: 0
-    vset(prog, 3, val) |> advance(4)
+    vset(prog, 3, val, modes) |> advance(4)
+  end
+
+  def run_op(prog, :relbase, modes) do
+    %{ prog | relative_base: prog.relative_base + vget(prog, 1, modes) } |> advance(2)
   end
 end
