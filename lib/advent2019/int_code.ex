@@ -48,13 +48,11 @@ defmodule IntCode do
   def vset(prog, offset, val, modes), do: _vset(prog, offset, val, modes[offset])
   def _vset(prog, offset, val, 0) do
     set_pos = prog.instructions[prog.pos + offset]
-    new_map = Map.put(prog.instructions, set_pos, val)
-    %{ prog | instructions: new_map }
+    %{ prog | instructions: Map.put(prog.instructions, set_pos, val) }
   end
   def _vset(prog, offset, val, 2) do
     set_pos = prog.instructions[prog.pos + offset] + prog.relative_base
-    new_map = Map.put(prog.instructions, set_pos, val)
-    %{ prog | instructions: new_map }
+    %{ prog | instructions: Map.put(prog.instructions, set_pos, val) }
   end
 
   def jump_to(prog, pos), do: %{ prog | pos: pos }

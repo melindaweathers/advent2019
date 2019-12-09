@@ -8,5 +8,7 @@ defmodule Day9 do
     IO.puts "First Star"
     IO.inspect IntCode.run_program(operations, [1]).outputs
 
+    IO.puts "Second Star"
+    IO.inspect IntCode.run_program(operations, [2]).outputs
   end
 end
