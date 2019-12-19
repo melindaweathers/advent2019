@@ -1,5 +1,7 @@
 #mix run -e 'Day10.run'
 defmodule Day10 do
+  require Math
+
   def load_map(filename) do
     File.stream!(filename)
       |> Stream.map(&(String.trim_trailing(&1,"\n")))
@@ -53,16 +55,61 @@ defmodule Day10 do
   def find_best(map) do
     ymax = map_size(map)-1
     xmax = map_size(map[0])-1
-    Enum.map(0..ymax, fn(y) ->
+    options = Enum.map(0..ymax, fn(y) ->
       Enum.map(0..xmax, fn(x) ->
-        count_visible(map, {x, y}, map[y][x])
-      end) |> Enum.max
-    end) |> Enum.max
+        {x, y, count_visible(map, {x, y}, map[y][x])}
+      end)
+    end) |> List.flatten
+    {x, y, count} = Enum.max_by(options, fn {_x, _y, visible} -> visible end)
+    IO.inspect("#{x}, #{y}, #{count}")
   end
 
-  def vaporize(map, x, y) do
-    row = Map.put(map, y, Map.put(map[y], x, "."))
+  def atan({xbase, ybase}, {x, y}), do: Math.atan2(y - ybase, x - xbase)
+
+  def vaporization_candidates(map, {xbase, ybase}, prev_angle) do
+    ymax = map_size(map)-1
+    xmax = map_size(map[0])-1
+    Enum.map(0..ymax, fn(y) ->
+      Enum.map(0..xmax, fn(x) ->
+        angle = atan({xbase, ybase}, {x, y})
+        if angle > prev_angle && is_visible_asteroid?(map, {xbase, ybase}, {x, y}, map[y][x]), do: {x, y, angle}, else: nil
+      end)
+    end) |> List.flatten |> Enum.reject(&is_nil/1)
   end
+
+  def best_of_candidates([]), do: nil
+  def best_of_candidates(candidates), do: Enum.min_by(candidates, fn {_x, _y, angle} -> angle end)
+
+  def next_to_vaporize(map, basepoint, prev_angle) do
+    best_candidate = vaporization_candidates(map, basepoint, prev_angle) |> best_of_candidates
+    if best_candidate == nil do
+      vaporization_candidates(map, basepoint, -1000) |> best_of_candidates
+    else
+      best_candidate
+    end
+  end
+
+  def vaporize(map, {x, y, _angle}) do
+    Map.put(map, y, Map.put(map[y], x, "."))
+  end
+
+  def run_vaporization(map, {xbase, ybase}), do: _run_vaporization(map, {xbase, ybase}, [], atan({xbase, ybase}, {xbase, ybase - 1}) - 0.0000000001)
+  defp _run_vaporization(map, basepoint, vaporized, prev_angle) do
+    nextpoint = next_to_vaporize(map, basepoint, prev_angle)
+    if nextpoint do
+      {_, _, angle} = nextpoint
+      _run_vaporization(vaporize(map, nextpoint), basepoint, [nextpoint|vaporized], angle)
+    else
+      vaporized |> Enum.reverse
+    end
+  end
+
+  def twohundredth(map, basepoint) do
+    vaporized = run_vaporization(map, basepoint)
+    {x, y, _angle} = Enum.at(vaporized, 199)
+    IO.inspect "#{x}, #{y}"
+  end
+
 
   def run do
     IO.puts "Should be 8"
@@ -82,6 +129,12 @@ defmodule Day10 do
 
     IO.puts "First Star"
     IO.puts load_map('inputs/day10.txt') |> find_best
+
+    IO.puts "Should be 8, 2"
+    twohundredth(load_map('inputs/day10-sample5.txt'), {11, 13})
+
+    IO.puts "Second Star"
+    twohundredth(load_map('inputs/day10.txt'), {17, 22})
   end
 end
 
