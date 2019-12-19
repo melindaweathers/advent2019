@@ -1,5 +1,5 @@
-#mix run -e 'Day12.run'
-defmodule Day12 do
+#mix run -e 'Day13.run'
+defmodule Day13 do
   require IntCode
 
   def draw_tiles(inputs), do: _draw_tiles(inputs, %{}, 0)
@@ -55,11 +55,11 @@ defmodule Day12 do
   end
 
   def run do
-    {:ok, operations} = File.read('inputs/day12.txt')
+    {:ok, operations} = File.read('inputs/day13.txt')
     {_, _, blocks} = IntCode.run_program(operations).outputs |> draw_tiles
     IO.inspect "First Star: #{blocks}"
 
-    {:ok, operations} = File.read('inputs/day12-part2.txt')
+    {:ok, operations} = File.read('inputs/day13-part2.txt')
     IntCode.run_program(operations) |> play_game
   end
 end
