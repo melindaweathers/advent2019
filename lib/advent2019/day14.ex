@@ -50,6 +50,17 @@ defmodule Day14 do
     process_inputs(reactions, tail, inputs_multiplier, ore + new_ore, remaining_leftovers)
   end
 
+  def fuel_for_ore(reactions), do: _fuel_for_ore(reactions, 1000000000000, 0, %{}, 10000)
+  defp _fuel_for_ore(_reactions, ore, fuel_count, _leftovers, 1) when ore <= 0, do: fuel_count - 1
+  defp _fuel_for_ore(reactions, ore, fuel_count, leftovers, fuel_multiplier) do
+    {quantity, new_leftovers} = process_element(reactions, "FUEL", fuel_multiplier, leftovers)
+    if fuel_multiplier > 1 && ore <= quantity do
+      _fuel_for_ore(reactions, ore, fuel_count, leftovers, div(fuel_multiplier, 10))
+    else
+      _fuel_for_ore(reactions, ore - quantity, fuel_count + fuel_multiplier, new_leftovers, fuel_multiplier)
+    end
+  end
+
   def run do
     IO.inspect("Should be 31")
     load_file('inputs/day14-sample1.txt') |> process_element("FUEL", 1, %{}) |> elem(0) |> IO.inspect
@@ -68,5 +79,17 @@ defmodule Day14 do
 
     IO.inspect("First Star")
     load_file('inputs/day14.txt') |> process_element("FUEL", 1, %{}) |> elem(0) |> IO.inspect
+
+    IO.inspect("Should be 82892753 fuel")
+    load_file('inputs/day14-sample3.txt') |> fuel_for_ore |> IO.inspect
+
+    IO.inspect("Should be 5586022 fuel")
+    load_file('inputs/day14-sample4.txt') |> fuel_for_ore |> IO.inspect
+
+    IO.inspect("Should be 460664 fuel")
+    load_file('inputs/day14-sample5.txt') |> fuel_for_ore |> IO.inspect
+
+    IO.inspect("Second Star")
+    load_file('inputs/day14.txt') |> fuel_for_ore |> IO.inspect
   end
 end
