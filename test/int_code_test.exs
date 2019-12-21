@@ -86,7 +86,6 @@ defmodule IntCodeTest do
     prog3 = IntCode.run_program("1102,34915192,34915192,7,4,7,99,0")
     assert prog3.outputs == [1219070632396864]
     prog1 = IntCode.run_program("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99")
-    IO.inspect prog1.outputs
     assert prog1.outputs == [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
   end
 end
