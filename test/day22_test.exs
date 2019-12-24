@@ -24,6 +24,26 @@ defmodule Day22Test do
   test "deal" do
     assert [0,7,4,1,8,5,2,9,6,3] == Day22.init_cards(10) |> Day22.deal(3)
     assert 3 == Day22.t_init_cards(10, 1) |> Day22.t_deal(3) |> Map.get(:pos)
+
+    assert 0 == Day22.t_init_cards(10, 0) |> Day22.t_deal(3) |> Day22.t_dealrev(3) |> Map.get(:pos)
+    assert 1 == Day22.t_init_cards(10, 1) |> Day22.t_deal(3) |> Day22.t_dealrev(3) |> Map.get(:pos)
+    assert 2 == Day22.t_init_cards(10, 2) |> Day22.t_deal(3) |> Day22.t_dealrev(3) |> Map.get(:pos)
+    assert 3 == Day22.t_init_cards(10, 3) |> Day22.t_deal(3) |> Day22.t_dealrev(3) |> Map.get(:pos)
+
+    assert 0 == Day22.t_init_cards(10, 0) |> Day22.t_deal(9) |> Day22.t_dealrev(9) |> Map.get(:pos)
+    assert 1 == Day22.t_init_cards(10, 1) |> Day22.t_deal(9) |> Day22.t_dealrev(9) |> Map.get(:pos)
+    assert 2 == Day22.t_init_cards(10, 2) |> Day22.t_deal(9) |> Day22.t_dealrev(9) |> Map.get(:pos)
+    assert 3 == Day22.t_init_cards(10, 3) |> Day22.t_deal(9) |> Day22.t_dealrev(9) |> Map.get(:pos)
+
+    assert 0 == Day22.t_init_cards(10, 0) |> Day22.t_deal(7) |> Day22.t_dealrev(7) |> Map.get(:pos)
+    assert 1 == Day22.t_init_cards(10, 1) |> Day22.t_deal(7) |> Day22.t_dealrev(7) |> Map.get(:pos)
+    assert 2 == Day22.t_init_cards(10, 2) |> Day22.t_deal(7) |> Day22.t_dealrev(7) |> Map.get(:pos)
+    assert 3 == Day22.t_init_cards(10, 3) |> Day22.t_deal(7) |> Day22.t_dealrev(7) |> Map.get(:pos)
+
+    assert [0,1,2,3,4,5,6,7,8,9] == Day22.init_cards(10) |> Day22.deal(1) |> Day22.dealrev(1)
+    assert [0,1,2,3,4,5,6,7,8,9] == Day22.init_cards(10) |> Day22.deal(3) |> Day22.dealrev(3)
+    assert [0,1,2,3,4,5,6,7,8,9] == Day22.init_cards(10) |> Day22.deal(7) |> Day22.dealrev(7)
+    assert [0,1,2,3,4,5,6,7,8,9] == Day22.init_cards(10) |> Day22.deal(9) |> Day22.dealrev(9)
   end
 
   test "shuffle" do
@@ -39,5 +59,17 @@ defmodule Day22Test do
   test "shuffle_n_times" do
     assert 0 == Day22.t_shuffle_cards("inputs/day22-sample2.txt", 10, 0) |> Map.get(:pos)
     assert 0 == Day22.t_shuffle_n_times("inputs/day22-sample2.txt", 10, 0, 10) |> Map.get(:pos)
+  end
+
+  test "shuffle and reverse" do
+    shuffled = Day22.shuffle_cards("inputs/day22-sample.txt", 10)
+    reversed_instructions = Day22.read_instructions("inputs/day22-sample.txt") |> Day22.reverse_instructions([])
+    assert [0,1,2,3,4,5,6,7,8,9] == Day22._shuffle_cards(reversed_instructions, shuffled)
+
+    tracked = Day22.t_shuffle_cards("inputs/day22-sample.txt", 10, 0)
+    assert 0 == Day22.t_revshuffle_cards("inputs/day22-sample.txt", 10, tracked.pos) |> Map.get(:pos)
+
+    tracked = Day22.t_shuffle_cards("inputs/day22-sample.txt", 10, 1)
+    assert 1 == Day22.t_revshuffle_cards("inputs/day22-sample.txt", 10, tracked.pos) |> Map.get(:pos)
   end
 end

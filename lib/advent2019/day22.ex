@@ -32,6 +32,18 @@ defmodule Day22 do
   end
   def t_deal(tracked, increment), do: %{ tracked | pos: rem(tracked.pos * increment, tracked.size) }
 
+  def dealrev([head|tail] = cards, increment), do: _dealrev(tail, increment, 1, length(cards), %{0 => head})
+  defp _dealrev([], _, _, size, dealt), do: Enum.map(0..size-1, fn i -> dealt[i] end)
+  defp _dealrev([head|tail], increment, idx, size, dealt) do
+    _dealrev(tail, increment, idx + 1, size, Map.put(dealt, reverse_deal_index(idx, increment, size), head))
+  end
+  def t_dealrev(tracked, increment), do: %{ tracked | pos: reverse_deal_index(tracked.pos, increment, tracked.size) }
+
+  def reverse_deal_index(pos, inc, size), do: _reverse_deal_index(pos, inc, size, 0)
+  defp _reverse_deal_index(pos, inc, size, n) do
+    if rem((pos + size*n), inc) == 0, do: div((pos + size*n), inc), else: _reverse_deal_index(pos, inc, size, n+1)
+  end
+
   def read_instructions(filename) do
     File.stream!(filename)
       |> Stream.map(&String.trim/1)
@@ -39,18 +51,32 @@ defmodule Day22 do
       |> Enum.to_list
   end
 
+  def reverse_instructions([], reversed), do: reversed
+  def reverse_instructions([head|tail], reversed), do: reverse_instructions(tail, [reverse_instruction(head)|reversed])
+
+  def reverse_instruction(["cut", size]), do: ["cut", "#{-1*String.to_integer(size)}"]
+  def reverse_instruction(["deal", "into"|_]), do: ["deal", "into", "new", "stack"]
+  def reverse_instruction(["deal", "with", "increment", inc]), do: ["dealrev", "with", "increment", inc]
+
   def run_instruction(["cut", size], cards), do: cut(cards, String.to_integer(size))
   def run_instruction(["deal", "into"|_], cards), do: new_stack(cards)
+  def run_instruction(["deal", "into"|_], cards), do: new_stack(cards)
   def run_instruction(["deal", "with", "increment", inc], cards), do: deal(cards, String.to_integer(inc))
+  def run_instruction(["dealrev", "with", "increment", inc], cards), do: dealrev(cards, String.to_integer(inc))
 
   def t_run_instruction(["cut", size], tracked), do: t_cut(tracked, String.to_integer(size))
   def t_run_instruction(["deal", "into"|_], tracked), do: t_new_stack(tracked)
   def t_run_instruction(["deal", "with", "increment", inc], tracked), do: t_deal(tracked, String.to_integer(inc))
+  def t_run_instruction(["dealrev", "with", "increment", inc], tracked), do: t_dealrev(tracked, String.to_integer(inc))
 
   def shuffle_cards(filename, num), do: _shuffle_cards(read_instructions(filename), init_cards(num))
-  defp _shuffle_cards([], cards), do: cards
-  defp _shuffle_cards([head|instructions], cards) do
+  def _shuffle_cards([], cards), do: cards
+  def _shuffle_cards([head|instructions], cards) do
     _shuffle_cards(instructions, run_instruction(head, cards))
+  end
+
+  def t_revshuffle_cards(filename, num, tracked_num) do
+    _t_shuffle_cards(read_instructions(filename) |> reverse_instructions([]), t_init_cards(num, tracked_num))
   end
 
   def t_shuffle_cards(filename, num, tracked_num), do: _t_shuffle_cards(read_instructions(filename), t_init_cards(num, tracked_num))
@@ -60,11 +86,12 @@ defmodule Day22 do
   end
 
   def t_shuffle_n_times(filename, num, tracked_num, n) do
-    _t_shuffle_n_times(read_instructions(filename), t_init_cards(num, tracked_num), n, [], true)
+    _t_shuffle_n_times(read_instructions(filename) |> reverse_instructions([]), t_init_cards(num, tracked_num), n, [], true)
   end
   defp _t_shuffle_n_times(_instructions, tracked, 0, _, _), do: tracked
   defp _t_shuffle_n_times(instructions, tracked, n, results, track_cycles) do
     new_tracked = _t_shuffle_cards(instructions, tracked)
+    IO.inspect new_tracked.pos
     results_pos = Enum.find_index(results, fn x -> x == new_tracked.pos end)
     if track_cycles && results_pos do
       cycle_index = length(results) - results_pos - 1
@@ -86,6 +113,11 @@ defmodule Day22 do
     # Track only the card we care about
     t_shuffle_cards("inputs/day22.txt", 10007, 2019) |> IO.inspect
 
-    t_shuffle_n_times("inputs/day22.txt", 119315717514047, 2020, 101741582076661) |> IO.inspect
+    IO.inspect "Trying track and reverse"
+    tracked = t_shuffle_cards("inputs/day22.txt", 10007, 2019)
+    t_revshuffle_cards("inputs/day22.txt", 10007, tracked.pos) |> IO.inspect
+
+    #t_shuffle_n_times("inputs/day22.txt", 119315717514047, 2020, 101741582076661) |> IO.inspect
+    t_shuffle_n_times("inputs/day22.txt", 119315717514047, 2020, 100) |> IO.inspect
   end
 end
